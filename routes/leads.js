@@ -16,7 +16,7 @@ router.get('/', auth, async (req, res) => {
     
     // If user is associate, only show their leads
     if (req.user.role === 'associate') {
-      query.assignedTo = req.user.id;
+      query.associate = req.user.id;
     }
 
     // Add search filters
@@ -32,8 +32,9 @@ router.get('/', auth, async (req, res) => {
     if (source) query.source = source;
 
     const leads = await Lead.find(query)
-      .populate('assignedTo', 'name')
-      .populate('addedBy', 'name')
+      .populate('project', 'name location')
+      .populate('associate', 'name')
+      .populate('createdBy', 'name')
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -65,7 +66,8 @@ router.post('/', [
   auth,
   body('name').notEmpty().withMessage('Name is required'),
   body('phone').notEmpty().withMessage('Phone is required'),
-  body('source').isIn(['Website', 'Facebook', 'Google', 'Referral', 'Walk-in', 'Other']).withMessage('Valid source is required')
+  body('email').isEmail().withMessage('Valid email is required'),
+  body('source').optional().isIn(['Website', 'Referral', 'Social Media', 'Walk-in', 'Advertisement', 'Other']).withMessage('Valid source is required')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -79,16 +81,17 @@ router.post('/', [
 
     const leadData = {
       ...req.body,
-      assignedTo: req.body.assignedTo || req.user.id,
-      addedBy: req.user.id
+      associate: req.body.associate || req.user.id,
+      createdBy: req.user.id
     };
 
     const lead = new Lead(leadData);
     await lead.save();
 
     const populatedLead = await Lead.findById(lead._id)
-      .populate('assignedTo', 'name')
-      .populate('addedBy', 'name');
+      .populate('project', 'name location')
+      .populate('associate', 'name')
+      .populate('createdBy', 'name');
 
     res.status(201).json({
       success: true,

@@ -13,29 +13,25 @@ const leadSchema = new mongoose.Schema({
   },
   email: {
     type: String,
+    required: true,
     trim: true,
     lowercase: true
   },
+  project: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Project'
+  },
   source: {
     type: String,
-    enum: ['Website', 'Facebook', 'Google', 'Referral', 'Walk-in', 'Other'],
+    enum: ['Website', 'Referral', 'Social Media', 'Walk-in', 'Advertisement', 'Other'],
     default: 'Website'
   },
   status: {
     type: String,
-    enum: ['New', 'Contacted', 'Qualified', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost'],
-    default: 'New'
-  },
-  priority: {
-    type: String,
-    enum: ['Low', 'Medium', 'High'],
-    default: 'Medium'
+    enum: ['Pending', 'Show', 'Visit', 'Deal Done'],
+    default: 'Pending'
   },
   budget: {
-    type: Number,
-    min: 0
-  },
-  requirements: {
     type: String,
     trim: true
   },
@@ -43,12 +39,11 @@ const leadSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
-  assignedTo: {
+  associate: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    ref: 'User'
   },
-  addedBy: {
+  createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true

@@ -11,6 +11,7 @@
     "dev": "nodemon index.js",
     "seed": "node scripts/seedDatabase.js",
     "seed-users": "node scripts/seedUsers.js",
+    "clear-data": "node scripts/clearData.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
