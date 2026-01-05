@@ -9,7 +9,7 @@ const router = express.Router();
 // @desc    Login user
 // @access  Public
 router.post('/login', [
-  body('username').notEmpty().withMessage('Username is required'),
+  body('email').isEmail().withMessage('Valid email is required'),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
 ], authController.login);
 

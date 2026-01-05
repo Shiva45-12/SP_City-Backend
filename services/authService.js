@@ -3,9 +3,9 @@ const User = require('../models/User');
 
 class AuthService {
   // Login user
-  async loginUser(username, password) {
+  async loginUser(email, password) {
     try {
-      const user = await User.findOne({ username }).select('+password');
+      const user = await User.findOne({ email }).select('+password');
       if (!user) {
         return {
           success: false,
@@ -34,15 +34,17 @@ class AuthService {
       return {
         success: true,
         message: 'Login successful',
-        token,
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          username: user.username,
-          role: user.role,
-          permissions: user.permissions,
-          department: user.department
+        data: {
+          token,
+          user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            username: user.username,
+            role: user.role,
+            permissions: user.permissions,
+            department: user.department
+          }
         }
       };
     } catch (error) {
