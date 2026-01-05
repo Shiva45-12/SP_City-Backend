@@ -3,13 +3,28 @@ const User = require('../models/User');
 
 class AuthService {
   // Login user
-  async loginUser(email, password) {
+  async loginUser(identifier, password) {
     try {
-      const user = await User.findOne({ email }).select('+password');
+      // Find user by email or username
+      const user = await User.findOne({ 
+        $or: [
+          { email: identifier },
+          { username: identifier }
+        ]
+      }).select('+password');
+      
       if (!user) {
         return {
           success: false,
           message: 'Invalid credentials'
+        };
+      }
+
+      // Check if user is active
+      if (user.status !== 'Active') {
+        return {
+          success: false,
+          message: 'Account is inactive. Please contact admin.'
         };
       }
 
@@ -43,7 +58,8 @@ class AuthService {
             username: user.username,
             role: user.role,
             permissions: user.permissions,
-            department: user.department
+            department: user.department,
+            status: user.status
           }
         }
       };
@@ -57,6 +73,41 @@ class AuthService {
     try {
       const user = await User.findById(userId).select('-password');
       return user;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Update user profile
+  async updateUserProfile(userId, updateData) {
+    try {
+      const allowedFields = ['name', 'phone', 'address', 'bio'];
+      const updates = {};
+      
+      Object.keys(updateData).forEach(key => {
+        if (allowedFields.includes(key)) {
+          updates[key] = updateData[key];
+        }
+      });
+
+      const user = await User.findByIdAndUpdate(
+        userId,
+        { $set: updates },
+        { new: true, runValidators: true }
+      ).select('-password');
+
+      if (!user) {
+        return {
+          success: false,
+          message: 'User not found'
+        };
+      }
+
+      return {
+        success: true,
+        message: 'Profile updated successfully',
+        data: user
+      };
     } catch (error) {
       throw error;
     }

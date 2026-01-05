@@ -9,9 +9,19 @@ const router = express.Router();
 // @desc    Login user
 // @access  Public
 router.post('/login', [
-  body('email').isEmail().withMessage('Valid email is required'),
+  body('identifier').notEmpty().withMessage('Username or email is required'),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
 ], authController.login);
+
+// @route   PUT /api/auth/profile
+// @desc    Update user profile
+// @access  Private
+router.put('/profile', [
+  auth,
+  body('name').optional().notEmpty().withMessage('Name cannot be empty'),
+  body('phone').optional().notEmpty().withMessage('Phone cannot be empty'),
+  body('address').optional().notEmpty().withMessage('Address cannot be empty')
+], authController.updateProfile);
 
 // @route   GET /api/auth/me
 // @desc    Get current user

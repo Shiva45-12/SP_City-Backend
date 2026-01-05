@@ -17,13 +17,13 @@ const projectSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['Residential', 'Commercial', 'Industrial'],
+    enum: ['Residential', 'Commercial', 'Industrial', 'Mixed Use'],
     required: true
   },
   status: {
     type: String,
-    enum: ['Planning', 'In Progress', 'Completed', 'On Hold'],
-    default: 'Planning'
+    enum: ['Active', 'Upcoming', 'Completed', 'On Hold', 'Pending Approval'],
+    default: 'Active'
   },
   startDate: {
     type: Date,
@@ -60,6 +60,10 @@ const projectSchema = new mongoose.Schema({
     type: String,
     trim: true
   }],
+  image: {
+    type: String,
+    trim: true
+  },
   assignedTo: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
@@ -68,6 +72,19 @@ const projectSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
+  },
+  commissionRate: {
+    type: Number,
+    default: 2, // 2% default commission
+    min: 0,
+    max: 10
+  },
+  approvedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  approvedAt: {
+    type: Date
   }
 }, {
   timestamps: true

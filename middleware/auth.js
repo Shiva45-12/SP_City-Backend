@@ -23,6 +23,7 @@ const auth = async (req, res, next) => {
     }
 
     req.user = user;
+    req.user.id = user._id.toString(); // Add id property for compatibility
     next();
   } catch (error) {
     res.status(401).json({ 
@@ -42,4 +43,6 @@ const adminAuth = (req, res, next) => {
   next();
 };
 
-module.exports = { auth, adminAuth };
+const protect = auth; // Alias for compatibility
+
+module.exports = { auth, adminAuth, protect };

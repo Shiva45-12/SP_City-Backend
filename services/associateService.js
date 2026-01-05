@@ -53,17 +53,40 @@ class AssociateService {
         };
       }
 
-      // Set role-based permissions
-      const rolePermissions = {
-        'Sales Executive': ['leads'],
-        'Team Lead': ['leads', 'projects'],
-        'Sales Manager': ['leads', 'projects', 'reports']
-      };
+      // Generate unique username if not provided
+      if (!associateData.username) {
+        const baseName = associateData.name.toLowerCase().replace(/\s+/g, '');
+        let username = baseName;
+        let counter = 1;
+        
+        while (await User.findOne({ username })) {
+          username = `${baseName}${counter}`;
+          counter++;
+        }
+        associateData.username = username;
+      }
+
+      // Generate default password if not provided
+      if (!associateData.password) {
+        associateData.password = `${associateData.username}@123`;
+      }
+
+      // Store plain password before hashing
+      const plainPassword = associateData.password;
+
+      // Set default permissions based on department
+      const defaultPermissions = ['leads'];
+      if (associateData.department === 'Sales Manager') {
+        defaultPermissions.push('projects', 'reports');
+      } else if (associateData.department === 'Team Lead') {
+        defaultPermissions.push('projects');
+      }
 
       const associate = new User({
         ...associateData,
         role: 'associate',
-        permissions: associateData.permissions || rolePermissions[associateData.role] || []
+        permissions: associateData.permissions || defaultPermissions,
+        status: 'Active'
       });
 
       await associate.save();
@@ -79,7 +102,12 @@ class AssociateService {
           phone: associate.phone,
           role: associate.role,
           department: associate.department,
-          permissions: associate.permissions
+          permissions: associate.permissions,
+          status: associate.status,
+          loginCredentials: {
+            username: associate.username,
+            password: plainPassword
+          }
         }
       };
     } catch (error) {
@@ -98,8 +126,21 @@ class AssociateService {
         };
       }
 
-      // Remove password from update data
+      // Remove fields that shouldn't be updated via regular update
       delete updateData.password;
+      delete updateData.username;
+      delete updateData.confirmPassword;
+      delete updateData.role; // Remove this line if role updates are allowed
+
+      // Set role-based permissions if role is being updated
+      if (updateData.role) {
+        const rolePermissions = {
+          'Sales Executive': ['leads'],
+          'Team Lead': ['leads', 'projects'],
+          'Sales Manager': ['leads', 'projects', 'reports']
+        };
+        updateData.permissions = updateData.permissions || rolePermissions[updateData.role] || [];
+      }
 
       const updatedAssociate = await User.findByIdAndUpdate(
         associateId,
@@ -113,6 +154,7 @@ class AssociateService {
         data: updatedAssociate
       };
     } catch (error) {
+      console.error('Update associate error:', error);
       throw error;
     }
   }
@@ -168,6 +210,30 @@ class AssociateService {
       const associate = await User.findById(associateId).select('-password');
       return {
         success: true,
+        data: associate
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Update associate status
+  async updateAssociateStatus(associateId, status) {
+    try {
+      const associate = await User.findById(associateId);
+      if (!associate || associate.role !== 'associate') {
+        return {
+          success: false,
+          message: 'Associate not found'
+        };
+      }
+
+      associate.status = status;
+      await associate.save();
+
+      return {
+        success: true,
+        message: `Associate ${status.toLowerCase()} successfully`,
         data: associate
       };
     } catch (error) {

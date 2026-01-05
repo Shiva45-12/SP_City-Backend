@@ -14,11 +14,21 @@ const projectRoutes = require('./routes/projects');
 const siteRoutes = require('./routes/sites');
 const paymentRoutes = require('./routes/payments');
 const dashboardRoutes = require('./routes/dashboard');
+const siteVisitRoutes = require('./routes/siteVisits');
+const commissionRoutes = require('./routes/commissions');
 
 const app = express();
 
 // Connect to database
 connectDB();
+
+// CORS configuration - must be before other middleware
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://localhost:5173', 'https://sp-city.onrender.com'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Security middleware
 app.use(helmet());
@@ -29,12 +39,6 @@ const limiter = rateLimit({
   max: 100 // limit each IP to 100 requests per windowMs
 });
 app.use(limiter);
-
-// CORS configuration
-app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:5173', 'https://sp-city.onrender.com'],
-  credentials: true
-}));
 
 // Body parser middleware
 app.use(express.json({ limit: '10mb' }));
@@ -48,6 +52,8 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/sites', siteRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/site-visits', siteVisitRoutes);
+app.use('/api/commissions', commissionRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {

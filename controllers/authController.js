@@ -14,8 +14,8 @@ class AuthController {
         });
       }
 
-      const { email, password } = req.body;
-      const result = await authService.loginUser(email, password);
+      const { identifier, password } = req.body;
+      const result = await authService.loginUser(identifier, password);
 
       if (!result.success) {
         return res.status(401).json(result);
@@ -41,6 +41,34 @@ class AuthController {
       });
     } catch (error) {
       console.error('Get profile error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Server error'
+      });
+    }
+  }
+
+  // Update user profile
+  async updateProfile(req, res) {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors: errors.array()
+        });
+      }
+
+      const result = await authService.updateUserProfile(req.user.id, req.body);
+      
+      if (!result.success) {
+        return res.status(400).json(result);
+      }
+
+      res.json(result);
+    } catch (error) {
+      console.error('Update profile error:', error);
       res.status(500).json({
         success: false,
         message: 'Server error'

@@ -152,6 +152,34 @@ class AssociateController {
       });
     }
   }
+
+  // Update associate status (Admin only)
+  async updateAssociateStatus(req, res) {
+    try {
+      const { status } = req.body;
+      
+      if (!['Active', 'Inactive'].includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid status. Must be Active or Inactive'
+        });
+      }
+
+      const result = await associateService.updateAssociateStatus(req.params.id, status);
+
+      if (!result.success) {
+        return res.status(404).json(result);
+      }
+
+      res.json(result);
+    } catch (error) {
+      console.error('Update associate status error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Server error'
+      });
+    }
+  }
 }
 
 module.exports = new AssociateController();

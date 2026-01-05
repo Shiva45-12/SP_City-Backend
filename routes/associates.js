@@ -31,6 +31,8 @@ router.put('/:id/password', [
   body('newPassword').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
 ], associateController.changeAssociatePassword);
 
+router.put('/:id/status', auth, adminAuth, associateController.updateAssociateStatus);
+
 router.delete('/:id', auth, adminAuth, associateController.deleteAssociate);
 
 // Associate routes for profile management
