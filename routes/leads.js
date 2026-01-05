@@ -134,7 +134,7 @@ router.put('/:id', [
     }
 
     // Check if user has permission to update this lead
-    if (req.user.role === 'associate' && lead.assignedTo.toString() !== req.user.id) {
+    if (req.user.role === 'associate' && lead.associate.toString() !== req.user.id) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to update this lead'
@@ -145,7 +145,9 @@ router.put('/:id', [
       req.params.id,
       req.body,
       { new: true, runValidators: true }
-    ).populate('assignedTo', 'name').populate('addedBy', 'name');
+    ).populate('project', 'name location')
+     .populate('associate', 'name')
+     .populate('createdBy', 'name');
 
     res.json({
       success: true,
@@ -175,7 +177,7 @@ router.delete('/:id', auth, async (req, res) => {
     }
 
     // Check if user has permission to delete this lead
-    if (req.user.role === 'associate' && lead.assignedTo.toString() !== req.user.id) {
+    if (req.user.role === 'associate' && lead.associate.toString() !== req.user.id) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to delete this lead'
@@ -204,7 +206,7 @@ router.get('/stats', auth, async (req, res) => {
   try {
     let matchQuery = {};
     if (req.user.role === 'associate') {
-      matchQuery.assignedTo = req.user.id;
+      matchQuery.associate = req.user.id;
     }
 
     const stats = await Lead.aggregate([
