@@ -1,12 +1,13 @@
 const associateService = require('../services/associateService');
+const rewardService = require('../services/rewardService');
 const { validationResult } = require('express-validator');
 
 class AssociateController {
-  // Get all associates (Admin only)
+  // Get all associates
   async getAllAssociates(req, res) {
     try {
       const { page = 1, limit = 10, search = '' } = req.query;
-      const result = await associateService.getAllAssociates(page, limit, search);
+      const result = await associateService.getAllAssociates(page, limit, search, req.user);
       res.json(result);
     } catch (error) {
       console.error('Get associates error:', error);
@@ -174,6 +175,63 @@ class AssociateController {
       res.json(result);
     } catch (error) {
       console.error('Update associate status error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Server error'
+      });
+    }
+  }
+
+  // Get own lifetime rewards (Associate only)
+  async getMyLifetimeRewards(req, res) {
+    try {
+      const result = await rewardService.calculateLifetimeRewards(req.user.id);
+      if (!result.success) {
+        return res.status(400).json(result);
+      }
+      res.json(result);
+    } catch (error) {
+      console.error('Get my lifetime rewards error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Server error'
+      });
+    }
+  }
+
+  // Get specific associate's lifetime rewards (Admin only)
+  async getAssociateLifetimeRewards(req, res) {
+    try {
+      const result = await rewardService.calculateLifetimeRewards(req.params.id);
+      if (!result.success) {
+        return res.status(400).json(result);
+      }
+      res.json(result);
+    } catch (error) {
+      console.error('Get associate lifetime rewards error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Server error'
+      });
+    }
+  }
+
+  // Get Downline for an associate
+  async getDownline(req, res) {
+    try {
+      const associateId = req.params.id || req.user.id;
+      const User = require('../models/User');
+      
+      const downline = await User.find({ createdBy: associateId })
+        .select('-password -plainPassword')
+        .sort({ createdAt: -1 });
+
+      res.json({
+        success: true,
+        data: downline
+      });
+    } catch (error) {
+      console.error('Get downline error:', error);
       res.status(500).json({
         success: false,
         message: 'Server error'

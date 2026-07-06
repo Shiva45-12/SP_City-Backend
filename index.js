@@ -16,6 +16,9 @@ const paymentRoutes = require('./routes/payments');
 const dashboardRoutes = require('./routes/dashboard');
 const siteVisitRoutes = require('./routes/siteVisits');
 const commissionRoutes = require('./routes/commissions');
+const expenseRoutes = require('./routes/expenses');
+const invoiceRoutes = require('./routes/invoices');
+const rewardRoutes = require('./routes/rewards');
 
 const app = express();
 
@@ -36,7 +39,7 @@ app.use(helmet());
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  max: 10000 // increased for development
 });
 app.use(limiter);
 
@@ -54,6 +57,9 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/site-visits', siteVisitRoutes);
 app.use('/api/commissions', commissionRoutes);
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/invoices', invoiceRoutes);
+app.use('/api/rewards', rewardRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {

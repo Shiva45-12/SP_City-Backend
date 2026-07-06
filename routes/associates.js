@@ -5,11 +5,10 @@ const { auth, adminAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Admin routes for associate management
-router.get('/', auth, adminAuth, associateController.getAllAssociates);
+// General routes for associate management (Admin sees all, Associate sees their downline)
+router.get('/', auth, associateController.getAllAssociates);
 router.post('/', [
   auth,
-  adminAuth,
   body('name').notEmpty().withMessage('Name is required'),
   body('email').isEmail().withMessage('Valid email is required'),
   body('username').notEmpty().withMessage('Username is required'),
@@ -38,5 +37,13 @@ router.delete('/:id', auth, adminAuth, associateController.deleteAssociate);
 // Associate routes for profile management
 router.get('/profile', auth, associateController.getAssociateProfile);
 router.put('/profile', auth, associateController.updateAssociateProfile);
+
+// Lifetime Rewards routes
+router.get('/lifetime-rewards', auth, associateController.getMyLifetimeRewards);
+router.get('/:id/lifetime-rewards', auth, adminAuth, associateController.getAssociateLifetimeRewards);
+
+// Network / Downline routes
+router.get('/my-downline', auth, associateController.getDownline);
+router.get('/:id/downline', auth, associateController.getDownline);
 
 module.exports = router;

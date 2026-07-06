@@ -2,7 +2,7 @@ const User = require('../models/User');
 
 class AssociateService {
   // Get all associates with pagination and search
-  async getAllAssociates(page, limit, search) {
+  async getAllAssociates(page, limit, search, user) {
     try {
       const query = {
         role: 'associate',
@@ -14,6 +14,10 @@ class AssociateService {
           ]
         })
       };
+
+      if (user && user.role === 'associate') {
+        query.createdBy = user.id;
+      }
 
       const associates = await User.find(query)
         .select('-password')
